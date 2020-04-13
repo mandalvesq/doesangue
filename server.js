@@ -1,3 +1,15 @@
+var winston = require('winston');
+
+
+var logger = new (winston.createLogger)({
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: './all-logs.log' }),
+  ],
+  exceptionHandlers: [
+    new winston.transports.File({ filename: './exceptions.log' })
+  ]
+});
 const express = require("express")
 const server = express()
 const nunjucks = require("nunjucks")
@@ -5,7 +17,7 @@ const Pool = require('pg').Pool
 const db = new Pool({
     user: 'postgres',
     password: '',
-    host: '',
+    host: 'doesangue..us-east-1.rds.amazonaws.com',
     port: 5432,
     database: 'doesangue'
 })
@@ -23,7 +35,7 @@ server.get("/", function(req, res) {
     db.query("SELECT * FROM donors", function(err, result){
         if (err) return res.send("Erro de banco de dados parte 1");
 
-        
+        logger.warn('Banco de dados error'); 
         const donors = result.rows;
         return res.render("index.html", { donors })
     })
@@ -39,6 +51,7 @@ server.post("/", function(req, res){
     const blood = req.body.blood
 
     if (name == "" || email == "" || blood == ""){
+	logger.warn('Todos os campos sao obrigatorios');    
         res.send("Todos os campos são obrigatórios.")
     }
 
@@ -55,6 +68,6 @@ server.post("/", function(req, res){
     })
 
 })
-server.listen(8080, function() {
+server.listen(80,'0.0.0.0', function() {
     console.log("Iniciei o servidor")
 })
